@@ -1,0 +1,67 @@
+<div class="dashboard-container">
+
+  <!-- Main Content -->
+  <main class="content">
+    <h1>Bienvenue, Admin</h1>
+
+    <!-- Section Utilisateurs -->
+    <section>
+      <h2>Utilisateurs en attente d'approbation</h2>
+      <div class="table-container">
+        <table>
+          <tr>
+            <th>Email</th>
+            <th>Action</th>
+          </tr>
+          <tr *ngFor="let user of pendingUsers">
+            <td>{{ user.email }}</td>
+            <td>
+              <button class="approve" (click)="approveUser(user.uid)">✅ Approuver</button>
+              <button class="reject" (click)="rejectUser(user.uid)">❌ Refuser</button>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section Produits -->
+    <section>
+      <h2>Gestion des Produits</h2>
+      <div class="table-container">
+        <table>
+          <tr>
+            <th>Nom</th>
+            <th>Quantité</th>
+            <th>Prix</th>
+            <th>Action</th>
+          </tr>
+          <tr *ngFor="let product of products">
+            <td>{{ product.name }}</td>
+            <td>{{ product.quantity }}</td>
+            <td>{{ product.price }}</td>
+            <td>
+              <button class="edit" (click)="updateProduct(product.id, { quantity: product.quantity + 1 })">✏️ Modifier</button>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- Section Historique des Stocks -->
+    <section>
+      <h2>Historique des Stocks</h2>
+      <div class="table-container">
+        <table>
+          <tr>
+            <th>Produit</th>
+            <th>Quantité</th>
+            <th>Date</th>
+          </tr>
+          <tr *ngFor="let record of stockHistory">
+            <td>{{ record.productName }}</td>
+            <td>{{ record.quantity }}</td>
+            <td>{{ record.date }}</td>
+          </tr>
+        </table>
+      </div>
+    </section>

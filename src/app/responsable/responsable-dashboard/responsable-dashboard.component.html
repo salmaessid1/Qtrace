@@ -1,0 +1,290 @@
+<br> <br> <br>
+<div class="dashboard-container">
+  <!-- Dashboard Header -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1>
+        <mat-icon>dashboard</mat-icon>
+        Tableau de Bord Responsable
+        <span class="current-date">{{ currentDate | date:'fullDate' }}</span>
+      </h1>
+      <div class="header-actions">
+        <button mat-stroked-button color="primary" (click)="refreshDashboard()" matTooltip="Actualiser les données">
+          <mat-icon>refresh</mat-icon>
+          Actualiser
+        </button>
+        <button mat-stroked-button color="accent" (click)="exportDashboardData()" matTooltip="Exporter les données">
+          <mat-icon>download</mat-icon>
+          Exporter
+        </button>
+      </div>
+    </div>
+    <mat-progress-bar mode="indeterminate" *ngIf="loading"></mat-progress-bar>
+  </div>
+  <div class="dashboard-container">
+  <!-- KPI Cards Section -->
+  <mat-grid-list cols="4" rowHeight="1:1" gutterSize="16px" class="kpi-grid">
+    <mat-grid-tile *ngFor="let card of kpiCards">
+      <mat-card [class]="'kpi-card ' + card.color" (click)="onKpiClick(card.title)">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>{{card.icon}}</mat-icon>
+            {{card.title}}
+          </mat-card-title>
+          <mat-card-subtitle>{{card.description}}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="kpi-value">
+            <ng-container *ngIf="card.isCurrency; else plainValue">
+              {{card.value | currency:'TND':'symbol':'1.2-2'}}
+            </ng-container>
+            <ng-template #plainValue>
+              {{card.value}}
+            </ng-template>
+          </div>
+          <div *ngIf="card.trend !== undefined" class="kpi-trend">
+            <mat-icon [class]="card.trend >= 0 ? 'trend-up' : 'trend-down'">
+              {{card.trend >= 0 ? 'trending_up' : 'trending_down'}}
+            </mat-icon>
+            <span>{{card.trend}}% vs hier</span>
+            <span class="kpi-comparison" *ngIf="card.comparisonValue !== undefined">
+              {{card.comparisonValue | currency:'TND':'symbol':'1.2-2'}}
+            </span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
+  </mat-grid-list>
+ <!-- Nouvelle Section Authenticité -->
+ <div class="authenticity-section mat-elevation-z1">
+  <h2>
+    <mat-icon>verified</mat-icon>
+    Authenticité des Produits
+    <button mat-icon-button (click)="runAuthenticityCheck()" matTooltip="Lancer une vérification">
+      <mat-icon>refresh</mat-icon>
+    </button>
+  </h2>
+  
+  <div class="authenticity-grid">
+    <div class="authenticity-card verified">
+      <mat-icon>check_circle</mat-icon>
+      <div class="count">{{ authenticityStats.verified }}</div>
+      <div class="label">Produits Vérifiés</div>
+    </div>
+    
+    <div class="authenticity-card suspicious">
+      <mat-icon>warning</mat-icon>
+      <div class="count">{{ authenticityStats.suspicious }}</div>
+      <div class="label">Produits Suspects</div>
+      <button mat-button (click)="viewSuspiciousProducts()">Voir détails</button>
+    </div>
+    
+    <div class="authenticity-chart">
+      <canvas id="authenticityChart"></canvas>
+    </div>
+  </div>
+</div>
+
+ 
+  <div class="stock-analysis mat-elevation-z1">
+    <h2>
+      <mat-icon>analytics</mat-icon>
+      Analyse Prédictive du Stock
+      <div class="analysis-controls">
+        <mat-form-field>
+          <mat-label>Période</mat-label>
+          <mat-select [(value)]="selectedPeriod" (selectionChange)="updateStockAnalysis()">
+            <mat-option value="7">7 jours</mat-option>
+            <mat-option value="30">30 jours</mat-option>
+            <mat-option value="90">90 jours</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </h2>
+
+    <div class="stock-metrics">
+      <div class="stock-metric">
+        <div class="value">{{ stockMetrics.predictedStockouts }}</div>
+        <div class="label">Ruptures Prévues</div>
+        <div class="trend" [class.positive]="stockMetrics.stockoutTrend < 0">
+          <mat-icon>{{ stockMetrics.stockoutTrend < 0 ? 'trending_down' : 'trending_up' }}</mat-icon>
+          {{ stockMetrics.stockoutTrend }}%
+        </div>
+      </div>
+
+      <div class="stock-metric">
+        <div class="value">{{ stockMetrics.optimizationPotential | currency:'TND':'symbol':'1.2-2' }}</div>
+        <div class="label">Gain Potentiel</div>
+      </div>
+    </div>
+    <div class="stock-predictions">
+      <canvas id="stockPredictionChart"></canvas>
+    </div>
+  </div>
+
+
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Left Column -->
+    <div class="left-column">
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <h2>
+          <mat-icon>flash_on</mat-icon>
+          Actions Rapides
+        </h2>
+        <div class="actions-grid">
+          <button mat-raised-button 
+                  *ngFor="let action of quickActions" 
+                  [color]="action.color"
+                  (click)="handleQuickAction(action.action)">
+            <mat-icon>{{action.icon}}</mat-icon>
+            {{action.label}}
+          </button>
+        </div>
+      </div>
+
+      <!-- Performance Summary -->
+      <div class="performance-summary mat-elevation-z1">
+        <h2>
+          <mat-icon>assessment</mat-icon>
+          Performance du Mois
+        </h2>
+        <div class="performance-metrics">
+          <div class="metric">
+            <div class="metric-value">{{monthlyRevenue | currency:'TND':'symbol':'1.2-2'}}</div>
+            <div class="metric-label">Chiffre d'affaires</div>
+            <div class="metric-trend" [class.positive]="revenueTrend >= 0">
+              <mat-icon>{{revenueTrend >= 0 ? 'trending_up' : 'trending_down'}}</mat-icon>
+              {{revenueTrend}}%
+            </div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">{{monthlySales}}</div>
+            <div class="metric-label">Transactions</div>
+            <div class="metric-trend" [class.positive]="salesTrend >= 0">
+              <mat-icon>{{salesTrend >= 0 ? 'trending_up' : 'trending_down'}}</mat-icon>
+              {{salesTrend}}%
+            </div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">{{averageTicket | currency:'TND':'symbol':'1.2-2'}}</div>
+            <div class="metric-label">Panier moyen</div>
+            <div class="metric-trend" [class.positive]="ticketTrend >= 0">
+              <mat-icon>{{ticketTrend >= 0 ? 'trending_up' : 'trending_down'}}</mat-icon>
+              {{ticketTrend}}%
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="right-column">
+      <!-- Charts Section -->
+      <mat-tab-group class="charts-section" (selectedTabChange)="onTabChange($event)">
+        <mat-tab label="Tendance des Ventes">
+          <div class="chart-container">
+            <canvas id="salesTrendChart"></canvas>
+          </div>
+        </mat-tab>
+        <mat-tab label="Répartition des Produits">
+          <div class="chart-container">
+            <canvas id="productDistributionChart"></canvas>
+          </div>
+        </mat-tab>
+        <mat-tab label="Performance par Catégorie">
+          <div class="chart-container">
+            <canvas id="categoryPerformanceChart"></canvas>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+  </div>
+
+  <!-- Tables Section -->
+  <div class="tables-section">
+    <div class="recent-sales mat-elevation-z1">
+      <div class="section-header">
+        <h2>
+          <mat-icon>history</mat-icon>
+          Dernières Ventes
+        </h2>
+        <button mat-button (click)="viewAllSales()">Voir tout</button>
+      </div>
+      <mat-table [dataSource]="recentSales">
+        <ng-container matColumnDef="id">
+          <mat-header-cell *matHeaderCellDef>N° Facture</mat-header-cell>
+          <mat-cell *matCellDef="let sale">{{sale.id}}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="date">
+          <mat-header-cell *matHeaderCellDef>Date</mat-header-cell>
+          <mat-cell *matCellDef="let sale">{{sale.date | date:'short'}}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="amount">
+          <mat-header-cell *matHeaderCellDef>Montant (DT)</mat-header-cell>
+          <mat-cell *matCellDef="let sale">{{sale.amount | currency:'TND':'symbol':'1.2-2'}}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="paymentMethod">
+          <mat-header-cell *matHeaderCellDef>Paiement</mat-header-cell>
+          <mat-cell *matCellDef="let sale">
+            <div class="payment-method" [class.cash]="sale.paymentMethod === 'cash'" 
+                                      [class.card]="sale.paymentMethod === 'card'"
+                                      [class.credit]="sale.paymentMethod === 'credit'">
+              <mat-icon>{{sale.paymentMethod === 'cash' ? 'money' : 
+                         sale.paymentMethod === 'card' ? 'credit_card' : 'receipt'}}</mat-icon>
+              {{sale.paymentMethod === 'cash' ? 'Espèces' : 
+                sale.paymentMethod === 'card' ? 'Carte' : 'Crédit'}}
+            </div>
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="items">
+          <mat-header-cell *matHeaderCellDef>Articles</mat-header-cell>
+          <mat-cell *matCellDef="let sale">{{sale.items}}</mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+      </mat-table>
+    </div>
+
+    <div class="low-stock mat-elevation-z1">
+      <div class="section-header">
+        <h2>
+          <mat-icon>warning</mat-icon>
+          Produits en Faible Stock
+        </h2>
+        <button mat-button (click)="viewAllLowStock()">Voir tout</button>
+      </div>
+      <mat-list>
+        <mat-list-item *ngFor="let product of lowStockProducts" class="low-stock-item">
+          <mat-icon mat-list-icon>inventory_2</mat-icon>
+          <div mat-line>{{product.name}}</div>
+          <div mat-line>Réf: {{product.reference}}</div>
+          <div mat-line class="stock-quantity">
+            <mat-icon>warning</mat-icon>
+            Stock: {{product.quantity}} (Seuil: {{product.threshold}})
+          </div>
+          <div mat-line>{{product.price | currency:'TND':'symbol':'1.2-2'}}/unité</div>
+        </mat-list-item>
+      </mat-list>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  <div class="recent-activity mat-elevation-z1">
+    <h2>
+      <mat-icon>timeline</mat-icon>
+      Activité Récente
+    </h2>
+    <div class="activity-list">
+      <div class="activity-item" *ngFor="let activity of recentActivities">
+        <mat-icon class="activity-icon">{{activity.icon}}</mat-icon>
+        <div class="activity-content">
+          <div class="activity-message">{{activity.message}}</div>
+          <div class="activity-time">{{activity.time | date:'shortTime'}}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Interface</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="login.component.css">
+</head>
+<body>
+  <div class="login-container">
+    <div class="form-container">
+      <h2>Connexion</h2>
+      
+      <!-- Champ Email -->
+      <div class="input-container">
+        <input type="email" [(ngModel)]="email" placeholder="Email" required>
+        <i class="fas fa-envelope"></i>
+      </div>
+      
+      <!-- Champ Mot de passe -->
+      <div class="input-container">
+        <input type="password" [(ngModel)]="password" placeholder="Mot de passe" required>
+        <i class="fas fa-lock"></i>
+      </div>
+      <a routerLink="/forgot-password">Mot de passe oublié ?</a>    </div>
+      <!-- Spinner si en cours de chargement -->
+      <div *ngIf="loading" class="spinner"></div>
+
+      <!-- Boutons -->
+      <button class="login-btn" (click)="login()" [disabled]="loading">
+        Se connecter
+      </button>
+
+      <button class="register-btn" (click)="goToRegister()">Créer un compte</button>
+
+      <!-- Lien "Mot de passe oublié" -->
+      
+  </div>
+</body>
+</html>

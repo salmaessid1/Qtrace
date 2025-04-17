@@ -1,0 +1,146 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 🌟 Centrer l'interface à l'écran */
+body {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #1E2A38, #4FA3D1);
+  background-size: 200% 200%;
+  animation: gradientBG 10s ease infinite;
+}
+
+/* 🌟 Animation du fond */
+@keyframes gradientBG {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.register-container {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  /* 🌟 Permet de centrer l'interface verticalement */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  /* 🌟 Assure un bon positionnement au centre */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+
+/* 🌟 Titre */
+h2 {
+  font-size: 26px;
+  color: #1E2A38; /* Couleur de texte sombre */
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+/* 🌟 Conteneur des champs de saisie */
+.input-container {
+  position: relative;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+/* 🌟 Icônes dans les champs de saisie */
+.input-container i {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666; /* Couleur d'icône grise */
+  font-size: 18px;
+}
+
+/* 🌟 Champs de saisie */
+input {
+  width: 100%;
+  padding: 14px 40px 14px 40px; /* Espace pour l'icône */
+  border-radius: 8px;
+  border: 1px solid #ccc; /* Bordure grise */
+  background: #f5f5f5; /* Fond gris clair */
+  color: #333; /* Texte sombre */
+  font-size: 16px;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+/* 🌟 Placeholder des champs de saisie */
+input::placeholder {
+  color: #999; /* Texte gris pour le placeholder */
+}
+
+/* 🌟 Effet au focus */
+input:focus {
+  background: #fff; /* Fond blanc au focus */
+  border-color: #4FA3D1; /* Bordure bleue au focus */
+  box-shadow: 0 0 12px rgba(79, 163, 209, 0.8);
+}
+
+/* 🌟 Bouton */
+button {
+  width: 100%;
+  margin-top: 20px;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  text-transform: uppercase;
+  transition: 0.3s;
+}
+
+/* 🌟 Bouton d'inscription */
+.register-btn {
+  background: #3B82F6; /* Fond bleu */
+  color: white;
+  box-shadow: 0px 4px 10px rgba(59, 130, 246, 0.3);
+  transition: 0.3s ease-in-out;
+}
+
+.register-btn:hover {
+  background: linear-gradient(90deg, #1E2A38, #4FA3D1);
+  transform: translateY(-2px);
+  box-shadow: 0px 6px 20px rgba(79, 163, 209, 0.6);
+}
+
+/* 🌟 Lien de connexion */
+.login-link {
+  margin-top: 15px;
+  color: #666; /* Texte gris */
+  font-size: 14px;
+}
+
+.login-link a {
+  color: #1E2A38; /* Texte sombre */
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.login-link a:hover {
+  color: #4FA3D1; /* Couleur au survol */
+}

@@ -1,0 +1,92 @@
+<br><br>
+
+<section>
+  <div class="dashboard-container" [ngClass]="{'dark-mode': isDarkMode}">
+    <!-- Bouton pour basculer entre le mode clair et sombre -->
+    <div class="theme-toggle">
+      <button (click)="toggleTheme()">
+        <span class="material-icons">{{ isDarkMode ? 'wb_sunny' : 'brightness_3' }}</span>
+      </button>
+    </div>
+
+    <!-- Barre de recherche -->
+    <div class="search-bar">
+      <input type="text" placeholder="Rechercher un produit ou un utilisateur..." [(ngModel)]="searchQuery" (input)="onSearch()">
+    </div>
+
+    <!-- Section des statistiques principales -->
+    <div class="stats-container">
+      <div class="stat-card">
+        <h3>Utilisateurs Totaux</h3>
+        <p>{{ stats.totalUsers }}</p>
+      </div>
+      <div class="stat-card">
+        <h3>Utilisateurs Actifs</h3>
+        <p>{{ stats.activeUsers }}</p>
+      </div>
+      <div class="stat-card">
+        <h3>Utilisateurs en Attente</h3>
+        <p>{{ stats.pendingUsers }}</p>
+      </div>
+      <div class="stat-card">
+        <h3>Produits <br> Totaux</h3>
+        <p>{{ stats.totalProducts }}</p>
+      </div>
+      <div class="stat-card">
+        <h3>Produits en Rupture</h3>
+        <p>{{ stats.lowStockProducts }}</p>
+      </div>
+    </div>
+
+    <div class="charts-container">
+      <!-- Graphique Ventes par Produit -->
+      <div class="chart-card">
+        <h3>Ventes par Produit</h3>
+        <canvas id="salesChart"></canvas>
+      </div>
+    
+      <!-- Graphique Répartition des Stocks -->
+      <div class="chart-card">
+        <h3>Répartition des Stocks</h3>
+        <canvas id="stockChart"></canvas>
+      </div>
+    
+      <!-- Calendrier des Événements -->
+      <div class="calendar-card">
+        <h3>Calendrier des Événements</h3>
+        <full-calendar [options]="calendarOptions"></full-calendar>
+      </div>
+    </div>
+
+    <!-- Section des parfums les plus vendus -->
+    <div class="top-selling-container">
+      <h3>Parfums les Plus Vendus</h3>
+      <div class="top-selling-list">
+        <div class="perfume-card" *ngFor="let perfume of topSellingPerfumes">
+          <span class="perfume-name">{{ perfume.name }}</span>
+          <span class="perfume-sales">{{ perfume.sales }} ventes</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section des alertes en temps réel -->
+    <div class="alerts-container">
+      <h3>Alertes en Temps Réel</h3>
+      <div class="alert-card" *ngFor="let alert of alerts">
+        <p>{{ alert.message }}</p>
+        <span class="alert-time">{{ alert.time }}</span>
+      </div>
+    </div>
+
+    <!-- Section des liens rapides -->
+    <div class="quick-links-container">
+      <h3>Accès Rapide</h3>
+      <div class="quick-links">
+        <a routerLink="/admin/products" class="quick-link">Gérer les Produits</a>
+        <a routerLink="/admin/users" class="quick-link">Gérer les Utilisateurs</a>
+        <a routerLink="/admin/stock-history" class="quick-link">Historique des Stocks</a>
+        <a routerLink="/admin/report" class="quick-link">Rapports Analytiques</a>
+      </div>
+    </div>
+  </div>
+</section>

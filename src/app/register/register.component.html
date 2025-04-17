@@ -1,0 +1,23 @@
+<div class="register-container">
+  <div class="form-container">
+    <h2>Créer un compte</h2>
+
+    <div class="input-container">
+      <i class="fa fa-envelope"></i>
+      <input type="email" [(ngModel)]="email" placeholder="Email" required>
+    </div>
+
+    <div class="input-container">
+      <i class="fa fa-lock"></i>
+      <input type="password" [(ngModel)]="password" placeholder="Mot de passe" required>
+    </div>
+
+    <button class="register-btn" (click)="register()">
+      <i class="fa fa-user-plus"></i> Créer un compte
+    </button>
+
+    <p class="login-link">
+      Déjà un compte ? <a (click)="goToLogin()">Se connecter</a>
+    </p>
+  </div>
+</div>
