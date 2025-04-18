@@ -30,6 +30,7 @@ import { CommandeFournisseurComponent } from './responsable/commande-fournisseur
 import { SalesComponent } from './responsable/sales/sales.component';
 import { ProductDetailsComponent } from './responsable/product-details/product-details.component';
 import { VentesComponent } from './admin/ventes/ventes.component';
+import { FinancialDashboardComponent } from './responsable/financial-dashboard/financial-dashboard.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -60,6 +61,7 @@ const routes: Routes = [
     { path: 'stock', component: StockComponent },
     { path: 'setting', component: SettingComponent},
     { path: 'sales', component: SalesComponent },
+    { path: 'financial-dashboard', component: FinancialDashboardComponent},
     { path: 'product-details/:id', component: ProductDetailsComponent },
     { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
   ]},

@@ -10,12 +10,9 @@ export interface StockItem {
     prix: number;
     quantiteAjoutee: number;
   }>;
-
+  qrCode?: string | null;
+  imageUrl?: string | null;
   description?: string | null;
   editingPrice?: boolean;
   originalPrice?: number;
-  seuil: number;
-  qrCode?: string | null;
-  imageUrl?: string | null;
-
 }

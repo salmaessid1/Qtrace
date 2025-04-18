@@ -1,0 +1,132 @@
+<div class="dashboard-wrapper">
+  <h2><i class="fas fa-chart-line"></i> Tableau Financier</h2>
+
+  <div class="filters">
+    <select [(ngModel)]="period" (change)="applyPeriodFilter()" class="form-select">
+      <option value="today">Aujourd'hui</option>
+      <option value="week">Cette semaine</option>
+      <option value="month">Ce mois</option>
+      <option value="year">Cette année</option>
+      <option value="all">Toutes les données</option>
+      <option value="custom">Personnalisé</option>
+    </select>
+
+    <div *ngIf="period === 'custom'" class="date-picker mt-2">
+      <div class="row g-2">
+        <div class="col">
+          <input type="date" [(ngModel)]="customStart" class="form-control">
+        </div>
+        <div class="col">
+          <input type="date" [(ngModel)]="customEnd" class="form-control">
+        </div>
+        <div class="col-auto">
+          <button (click)="applyPeriodFilter()" class="btn btn-primary">Valider</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+    <p class="mt-2">Chargement des données financières...</p>
+    <div *ngIf="loadingTimeout" class="alert alert-warning mt-2">
+      Le chargement prend plus de temps que prévu. Veuillez patienter ou réessayer.
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="error-message alert alert-danger mt-3">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <i class="fas fa-exclamation-triangle me-2"></i> {{ errorMessage }}
+      </div>
+      <button (click)="retryLoading()" class="btn btn-sm btn-outline-danger">
+        <i class="fas fa-sync-alt"></i> Réessayer
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && !errorMessage && dataLoaded" class="dashboard-content mt-4">
+    <div class="metrics-grid row g-4">
+      <div class="col-md-3">
+        <div class="metric-box highlight card h-100">
+          <div class="card-body">
+            <h4 class="card-title">Chiffre d'affaires</h4>
+            <p class="card-text display-6">{{ totalCA | number:'1.2-2' }} DT</p>
+            <div class="trend" [class.positive]="caTrend >= 0">
+              <i [class]="'fas fa-arrow-' + (caTrend >= 0 ? 'up' : 'down')"></i>
+              {{ caTrend | number:'1.1-1' }}%
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="metric-box card h-100">
+          <div class="card-body">
+            <h4 class="card-title">Bénéfice brut</h4>
+            <p class="card-text display-6">{{ benefice | number:'1.2-2' }} DT</p>
+            <div class="subtext">Marge: {{ margeBrute | number:'1.1-1' }}%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="metric-box card h-100">
+          <div class="card-body">
+            <h4 class="card-title">Transactions</h4>
+            <p class="card-text display-6">{{ transactions }}</p>
+            <div class="subtext">Panier moyen: {{ panierMoyen | number:'1.2-2' }} DT</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="metric-box card h-100">
+          <div class="card-body">
+            <h4 class="card-title">Coûts moyens</h4>
+            <p class="card-text display-6">{{ costPerTransaction | number:'1.2-2' }} DT</p>
+            <div class="subtext">Par transaction</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts row mt-4 g-4">
+      <div class="col-lg-6">
+        <div class="chart-container card h-100">
+          <div class="card-body">
+            <h4 class="card-title">Évolution du CA</h4>
+            <div class="chart-wrapper">
+              <canvas id="lineChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="chart-container card h-100">
+          <div class="card-body">
+            <h4 class="card-title">Répartition des coûts</h4>
+            <div class="chart-wrapper">
+              <canvas id="doughnutChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && !errorMessage && !dataLoaded" class="no-data text-center py-5">
+    <div class="card">
+      <div class="card-body">
+        <i class="fas fa-database fa-3x text-muted mb-3"></i>
+        <h3>Aucune donnée financière disponible</h3>
+        <p>Commencez à enregistrer des ventes pour voir les statistiques</p>
+        <button (click)="retryLoading()" class="btn btn-primary mt-2">
+          <i class="fas fa-sync-alt"></i> Recharger
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

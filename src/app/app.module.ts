@@ -113,6 +113,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { VentesComponent } from './admin/ventes/ventes.component';
+import { FinancialDashboardComponent } from './responsable/financial-dashboard/financial-dashboard.component';
+
+
 
 const config: SocketIoConfig = { 
   url: 'http://localhost:3000', // Remplacez par votre URL de serveur
@@ -155,7 +158,6 @@ export function HttpLoaderFactory(http: HttpClient) {
     ConfirmationDialogComponent,
     SupplierDialogComponent,
     StockComponent,
-    ResponsableDashboardComponent,
     FilterPipe,
     ArrayFromNumberPipe,
     CommandeFournisseurComponent,
@@ -188,6 +190,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     SalesReportsComponent,
     StatusLabelPipe,
     VentesComponent,
+    FinancialDashboardComponent,
 
   ],
   imports: [

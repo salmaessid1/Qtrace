@@ -1,60 +1,68 @@
 import { Injectable } from '@angular/core';
 import emailjs from 'emailjs-com';
-import { Observable } from 'rxjs';
+import {  Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { AngularFireDatabase } from '@angular/fire/compat/database';
+import { AngularFireDatabase } from '@angular/fire/compat/database';  // Utilisation de la bonne version de AngularFireDatabase
 import { Commande } from '../models/commande';
-
 interface BatchNumberGenerationConfig {
   prefix?: string;
   dateFormat?: string;
   randomDigits?: number;
 }
-
 @Injectable({
   providedIn: 'root'
 })
 export class EmailService {
-  private emailServiceId = 'service_vl12chd';
-  private emailTemplateId = 'template_8o5ryuu';
-  private emailUserId = 'BH9KaqS3o-UnguAVb';
-  private historiquePath = '/historique-commandes';
+  private emailServiceId = 'service_tx2l5pc';
+  private emailTemplateId = 'template_k0yishm';
+  private emailUserId = 'LKPl8oSC80IDn7FO2';
+  private historiquePath = '/historique-commandes';  // Chemin de stockage des commandes dans Firebase
 
   constructor(private db: AngularFireDatabase) {}
 
+  /**
+   * Envoie un email de confirmation de commande via EmailJS.
+   * @param order - La commande à envoyer par email.
+   */
   sendEmail(order: any) {
+    // Vérification que l'email du fournisseur est présent
     if (!order.supplierEmail) {
       console.error("❌ L'email du fournisseur est manquant !");
       return;
     }
 
+    // Préparation des paramètres d'email
     const emailParams = {
       to_email: order.supplierEmail,
       to_name: order.supplierName,
-      order_id: order.idCommande, 
+      order_id: order.id,
       product_id: order.idProduit,
+      product_name: order.productName,
+      product_volume: order.productVolume, 
       quantity: order.quantity,
-      unit_price: order.unitPrice,
-      total_ht: order.totalHT,
-      total_ttc: order.totalTTC,
-      delivery_date: order.deliveryDate,
-      order_date: order.dateCommande,
-      company_name: 'Qtrace',
-      concentration: 'Eau de Parfum', 
-      size: 100, 
-      batch_number: this.generateBatchNumber(),
-      current_year: new Date().getFullYear(),
-      prefix: 'PARFUM',
-      randomDigits: 5,
+      unit_price: `${order.unitPrice} DT`,
+      total_ht: `${order.totalHT.toFixed(2)} DT`,
+      total_ttc: `${order.totalTTC.toFixed(2)} DT`,
+      delivery_date: new Date(order.deliveryDate).toLocaleDateString('fr-FR'),
+      order_date: new Date(order.dateCommande).toLocaleDateString('fr-FR'),
+      company_name: 'QStocker',
+      batch_number: order.batchNumber || 'N/A', 
     };
-
-    console.log("📩 Envoi de l'email avec les paramètres :", emailParams);
-
+    
     emailjs.send(this.emailServiceId, this.emailTemplateId, emailParams, this.emailUserId)
-      .then(() => console.log(`📧 emailjs envoyé à ${order.supplierEmail}`))
+      .then(() => {
+        console.log("✅ Email envoyé avec succès !");
+      })
+      .catch(error => {
+        console.error("❌ Erreur lors de l'envoi de l'email :", error);
+      });
+    
+
+    // Envoi de l'email via EmailJS
+    emailjs.send(this.emailServiceId, this.emailTemplateId, emailParams, this.emailUserId)
+      .then(() => console.log(`📧 Email envoyé à ${order.supplierEmail}`))
       .catch(error => console.error('❌ Erreur EmailJS:', error));
   }
-
   generateBatchNumber(config?: BatchNumberGenerationConfig): string {
     const {
       prefix = 'LOT',
@@ -85,7 +93,10 @@ export class EmailService {
 
     return `${prefix}-${datePart}-${randomPart}`;
   }
-
+  /**
+   * Récupère toutes les commandes de l'historique depuis Firebase.
+   * @returns Observable de toutes les commandes de l'historique.
+   */
   getCommandes(params?: { period: string }): Observable<Commande[]> {
     return this.db.list(this.historiquePath).snapshotChanges().pipe(
       map((changes: any[]) => 
@@ -96,11 +107,16 @@ export class EmailService {
       )
     );
   }
-
+  /**
+   * Ajoute une commande à l'historique des commandes dans Firebase Realtime Database.
+   * @param commande - La commande à ajouter.
+   * @returns Promise résolue une fois l'ajout terminé.
+   */
   ajouterCommandeHistorique(commande: any): Promise<void> {
+    // Ajouter la clé Firebase à la commande
     const newCommande = {
       ...commande,
-      key: this.db.createPushId()
+      key: this.db.createPushId() // Génère une clé unique
     };
   
     return this.db.list(this.historiquePath).set(newCommande.key, newCommande)
@@ -110,11 +126,13 @@ export class EmailService {
       });
   }
 
+  // Ajouter une méthode de mise à jour
   updateCommande(commandeKey: string, updateData: any): Promise<void> {
     return this.db.object(`/historique-commandes/${commandeKey}`).update(updateData);
-  }
+}
   
   deleteCommande(idCommande: string): Promise<void> {
     return this.db.object(`${this.historiquePath}/${idCommande}`).remove();
   }
+
 }

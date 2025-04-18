@@ -11,6 +11,7 @@ import { firstValueFrom, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { map } from 'rxjs/operators';
 
+
 @Component({
   selector: 'app-edit-product',
   templateUrl: './edit-product.component.html',
@@ -102,7 +103,7 @@ export class EditProductComponent implements OnInit {
       next: (product) => {
         if (!product) {
           this.errorMessage = `Produit avec ID ${this.productId} non trouvé`;
-          this.router.navigate(['/products']);
+          this.router.navigate(['/products']); // Redirection si produit non trouvé
           return;
         }
         this.populateForm(product);
@@ -112,7 +113,7 @@ export class EditProductComponent implements OnInit {
         console.error('Détails de l\'erreur:', error);
         this.errorMessage = `Erreur lors du chargement du produit ${this.productId}`;
         this.isLoading = false;
-        this.router.navigate(['/products']);
+        this.router.navigate(['/products']); // Redirection en cas d'erreur
       }
     });
   }
@@ -226,31 +227,36 @@ export class EditProductComponent implements OnInit {
       this.isLoading = true;
       const productData = this.prepareUpdateData();
   
+      // Vérification de l'existence avec gestion de type explicite
       const productExists = await firstValueFrom(
         this.productService.getProductById(this.productId).pipe(
           map((p: Product | null) => !!p),
           catchError(() => of(false))
-      ));
+        )
+      );
   
       if (!productExists) {
         throw new Error(`Le produit ${this.productId} n'existe pas`);
       }
   
+      // Mise à jour du produit
       await this.productService.updateProduct(this.productId, productData);
   
+      // Préparation des données pour le stock
       const stockData = {
         productId: this.productId,
-        productName: productData.name || '',
-        quantity: productData.stockQuantity || 0,
-        unitPrice: this.calculateUnitPrice(productData),
+        productName: productData.name || '', // Conversion nomProduit -> productName
+        quantity: productData.stockQuantity || 0, // Conversion quantite -> quantity
+        unitPrice: this.calculateUnitPrice(productData), // Conversion prixUnitaireHT -> unitPrice
         qrCode: productData.qrCode || null,
         imageUrl: productData.imageUrl || null,
         description: productData.description || null
       };
   
+      // Vérification du stock avec gestion de type
       const stockExists = await firstValueFrom(
         this.stockService.getProduct(this.productId).pipe(
-          map((s: any) => !!s),
+          map((s: any) => !!s), // Utilisez une interface spécifique si disponible
           catchError(() => of(false))
         )
       );
@@ -270,20 +276,22 @@ export class EditProductComponent implements OnInit {
     } catch (error: unknown) {
       this.errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
       console.error('Erreur:', error);
-      await this.loadProductData();
+      await this.loadProductData(); // Tentative de récupération
     } finally {
       this.isLoading = false;
     }
   }
   
   private calculateUnitPrice(product: Partial<Product>): number {
+    // Implémentez votre logique de calcul ici
+    // Exemple basique :
     return product.volume?.includes('100ml') ? 50 : 30;
   }
   
   private calculateSalePrice(product: Partial<Product>): number {
+    // Prix de vente = prix unitaire * marge (ex: 20%)
     return this.calculateUnitPrice(product) * 1.2;
   }
-
   private prepareUpdateData(): Partial<Product> {
     const formData = this.productForm.getRawValue();
     

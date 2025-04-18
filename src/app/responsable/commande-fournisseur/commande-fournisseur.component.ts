@@ -14,12 +14,9 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class CommandeFournisseurComponent implements OnInit {
   newOrder: any = {
-    id: '',
     quantity: 1,
-    unitPrice: 0,
     totalHT: 0,
-    totalTTC: 0,
-    deliveryDate: ''
+    totalTTC: 0
   };
   suppliers: Supplier[] = []; 
   products: Product[] = [];
@@ -27,6 +24,9 @@ export class CommandeFournisseurComponent implements OnInit {
   selectedSupplier?: Supplier;
   selectedProduct?: Product;
   productSearchTerm = '';
+  predefinedSizes: string[] = ['15ML', '30ML', '120ML'];
+   selectedSize: string = '';
+   customSize: string = '';
 
   constructor(
     private emailService: EmailService,
@@ -82,59 +82,58 @@ export class CommandeFournisseurComponent implements OnInit {
     if (this.selectedProduct) {
       this.newOrder.productId = this.selectedProduct.id;
       this.newOrder.productName = this.selectedProduct.name;
-      if (!this.newOrder.unitPrice || this.newOrder.unitPrice === 0) {
+  
+      if (!this.newOrder.unitPrice) {
         this.newOrder.unitPrice = this.selectedProduct.costPrice;
       }
+  
       this.calculateTotals();
     }
   }
 
   calculateTotals() {
-    if (this.newOrder.quantity && this.newOrder.unitPrice) {
-      const quantity = Number(this.newOrder.quantity);
-      const unitPrice = Number(this.newOrder.unitPrice);
-      
-      this.newOrder.totalHT = quantity * unitPrice;
-      this.newOrder.totalTTC = this.newOrder.totalHT * 1.19;
-    } else {
-      this.newOrder.totalHT = 0;
-      this.newOrder.totalTTC = 0;
-    }
+    const quantity = Number(this.newOrder.quantity) || 0;
+    const unitPrice = Number(this.newOrder.unitPrice) || 0;
+  
+    this.newOrder.totalHT = quantity * unitPrice;
+    this.newOrder.totalTTC = this.newOrder.totalHT * 1.19;
   }
+  
 
   sendOrder() {
     if (!this.selectedSupplier || !this.selectedProduct) {
-      alert('Veuillez sélectionner un fournisseur et un produit');
+      alert('❌ Veuillez sélectionner un fournisseur et un produit');
       return;
     }
-
-    if (!this.newOrder.id) {
+      if (!this.newOrder.id) {
       this.newOrder.id = this.generateOrderId();
     }  
-    
+    const finalSize = this.selectedSize === 'Autre' ? this.customSize : this.selectedSize;
+   
     const orderData = {
       ...this.newOrder,
-      deliveryDate: new Date(this.newOrder.deliveryDate).toISOString(), 
+      deliveryDate: new Date(this.newOrder.deliveryDate).toISOString(),
       id: this.newOrder.id,
-      idProduit: this.selectedProduct.id, 
+      idProduit: this.selectedProduct.id,
       productName: this.selectedProduct.name,
+      productVolume: this.selectedProduct.volume, 
       dateCommande: new Date().toISOString(),
       status: "En attente",
-      supplierId: this.selectedSupplier.id, 
+      supplierId: this.selectedSupplier.id,
       supplierName: this.selectedSupplier.name,
       supplierEmail: this.selectedSupplier.email,
-      unitPrice: this.newOrder.unitPrice
+      unitPrice: this.newOrder.unitPrice || 0
     };
-
+    
     this.db.object(`/historique-commandes/${orderData.id}`).set(orderData)
       .then(() => {
-        alert('Commande envoyée avec succès!');
+        alert('✅ Commande envoyée avec succès!');
         this.emailService.sendEmail(orderData);
         this.resetForm();
       })
       .catch(error => {
-        console.error("Erreur:", error);
-        alert(`Erreur lors de l'enregistrement: ${error.message}`);
+        console.error("❌ Erreur:", error);
+        alert(`❌ Erreur lors de l'enregistrement: ${error.message}`);
       });
   }
 
@@ -144,7 +143,7 @@ export class CommandeFournisseurComponent implements OnInit {
     const randomPart = Math.floor(1000 + Math.random() * 9000);
     this.newOrder.id = `CMD-${datePart}-${randomPart}`; 
     return this.newOrder.id;
-  }
+}
   
   get formattedProductId(): string {
     if (!this.selectedProduct?.id) return '';
@@ -154,15 +153,19 @@ export class CommandeFournisseurComponent implements OnInit {
   private resetForm() {
     this.newOrder = {
       id: this.generateOrderId(),
-      quantity: 1,
+      productId: '',
+      productName: '',
+      productVolume: '', 
       unitPrice: 0,
+      quantity: 1,
+      deliveryDate: '',
       totalHT: 0,
       totalTTC: 0,
-      deliveryDate: ''
     };
     this.selectedSupplier = undefined;
     this.selectedProduct = undefined;
     this.productSearchTerm = '';
     this.filterProducts();
-  }
+}
+
 }
