@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { catchError, Observable, of } from 'rxjs';
 import { Expense } from '../models/expense';
 import { MaterialPurchase } from '../models/material-purchase';
 
@@ -52,5 +52,10 @@ export class FinancialService {
 
   getAdvancedStats(): Observable<any> {
     return this.http.get(`${this.apiUrl}/advanced-stats`);
+   }
+
+   deleteExpense(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/expenses/${id}`);
   }
+
 }

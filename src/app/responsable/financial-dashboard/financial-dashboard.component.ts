@@ -1,14 +1,15 @@
 import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { SaleService } from '../../services/sale.service';
 import { StockService } from '../../services/stock.service';
+import { ExpenseService } from '../../services/expense.service';
 import { Chart, ChartConfiguration, registerables } from 'chart.js';
 import { 
   startOfDay, endOfDay, startOfWeek, endOfWeek, 
   startOfMonth, endOfMonth, startOfYear, endOfYear, 
-  subMonths, parseISO, isWithinInterval 
+  subMonths, parseISO, isWithinInterval, format 
 } from 'date-fns';
-import { combineLatest, Subscription, of, timer } from 'rxjs';
-import { catchError, finalize, take, tap, timeout } from 'rxjs/operators';
+import { combineLatest, Subscription, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-financial-dashboard',
@@ -25,6 +26,8 @@ export class FinancialDashboardComponent implements OnInit, OnDestroy, AfterView
   stock: any[] = [];
   filteredSales: any[] = [];
   previousPeriodSales: any[] = [];
+  expenses: any[] = [];
+  filteredExpenses: any[] = [];
 
   // Metrics
   totalCA = 0;
@@ -35,13 +38,35 @@ export class FinancialDashboardComponent implements OnInit, OnDestroy, AfterView
   margeBrute = 0;
   costPerTransaction = 0;
   caTrend = 0;
+  totalExpenses = 0;
 
   // UI States
-  loading = true;
-  loadingTimeout = false;
   errorMessage: string | null = null;
-  dataLoaded = false;
-  chartsInitialized = false;
+  showExpensesSection = false;
+  showExpenseModal = false;
+  expensesLoading = false;
+  addingExpense = false;
+
+  // New Expense
+  newExpense: any = {
+    date: format(new Date(), 'yyyy-MM-dd'),
+    amount: 0,
+    category: '',
+    description: '',
+    paymentMethod: 'Carte'
+  };
+
+  // Categories
+  expenseCategories = [
+    'Fournitures',
+    'Loyer',
+    'Salaires',
+    'Services',
+    'Marketing',
+    'Transport',
+    'Équipement',
+    'Autres'
+  ];
 
   // Filters
   period = 'month';
@@ -50,27 +75,18 @@ export class FinancialDashboardComponent implements OnInit, OnDestroy, AfterView
 
   constructor(
     private saleService: SaleService,
-    private stockService: StockService
+    private stockService: StockService,
+    private expenseService: ExpenseService
   ) {
     Chart.register(...registerables);
   }
 
   ngOnInit(): void {
     this.loadInitialData();
-    
-    // Timeout de sécurité
-    timer(8000).subscribe(() => {
-      if (this.loading) {
-        this.loadingTimeout = true;
-      }
-    });
   }
 
   ngAfterViewInit(): void {
-    this.chartsInitialized = true;
-    if (this.dataLoaded) {
-      this.initCharts();
-    }
+    this.initCharts();
   }
 
   ngOnDestroy(): void {
@@ -78,92 +94,146 @@ export class FinancialDashboardComponent implements OnInit, OnDestroy, AfterView
     this.destroyCharts();
   }
 
+  toggleExpensesSection(): void {
+    this.showExpensesSection = !this.showExpensesSection;
+    if (this.showExpensesSection && this.expenses.length === 0) {
+      this.loadExpenses();
+    }
+  }
+
+  openExpenseModal(): void {
+    this.showExpenseModal = true;
+  }
+
+  closeExpenseModal(): void {
+    this.showExpenseModal = false;
+    this.newExpense = {
+      date: format(new Date(), 'yyyy-MM-dd'),
+      amount: 0,
+      category: '',
+      description: '',
+      paymentMethod: 'Carte'
+    };
+  }
+
+  submitExpense(): void {
+    this.addingExpense = true;
+    this.expenseService.addExpense(this.newExpense).then(() => {
+      this.loadExpenses();
+      this.closeExpenseModal();
+    }).catch(error => {
+      this.errorMessage = 'Erreur lors de l\'ajout de la dépense';
+      console.error(error);
+    }).finally(() => {
+      this.addingExpense = false;
+    });
+  }
+
+  deleteExpense(id: string): void {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette dépense ?')) {
+      this.expenseService.deleteExpense(id).then(() => {
+        this.loadExpenses();
+      }).catch(error => {
+        this.errorMessage = 'Erreur lors de la suppression';
+        console.error(error);
+      });
+    }
+  }
+
+  getCategoryColor(category: string): string {
+    const colors: Record<string, string> = {
+      'Fournitures': 'info',
+      'Loyer': 'warning',
+      'Salaires': 'danger',
+      'Services': 'primary',
+      'Marketing': 'success',
+      'Transport': 'secondary',
+      'Équipement': 'dark',
+      'Autres': 'light'
+    };
+    return colors[category] || 'secondary';
+  }
+
   retryLoading(): void {
     this.loadInitialData();
+    if (this.showExpensesSection) {
+      this.loadExpenses();
+    }
   }
 
   private loadInitialData(): void {
-    this.loading = true;
     this.errorMessage = null;
-    this.dataLoaded = false;
-    this.loadingTimeout = false;
-
-    const TIMEOUT_DURATION = 10000; // 10 secondes
 
     const sales$ = this.saleService.getSalesHistory('all').pipe(
-      timeout(TIMEOUT_DURATION),
       catchError(err => {
-        console.error('Timeout ou erreur sales:', err);
+        console.error('Erreur sales:', err);
         return of([]);
       })
     );
 
     const stock$ = this.stockService.getStock().pipe(
-      timeout(TIMEOUT_DURATION),
       catchError(err => {
-        console.error('Timeout ou erreur stock:', err);
+        console.error('Erreur stock:', err);
         return of([]);
       })
     );
 
-    const timeoutTimer$ = timer(TIMEOUT_DURATION).pipe(
-      tap(() => {
-        this.loadingTimeout = true;
-      })
-    );
-
     this.subscriptions.add(
-      combineLatest([sales$, stock$, timeoutTimer$]).pipe(
-        take(1), // Prend seulement la première émission
-        finalize(() => {
-          this.loading = false;
-        })
-      ).subscribe({
-        next: ([sales, stock, _]) => {
+      combineLatest([sales$, stock$]).subscribe({
+        next: ([sales, stock]) => {
           this.processData(sales, stock);
         },
         error: (err) => {
-          console.error('Erreur finale:', err);
+          console.error('Erreur:', err);
           this.errorMessage = 'Impossible de charger les données';
         }
       })
     );
-}
+  }
 
-private processData(sales: any[], stock: any[]): void {
+  private loadExpenses(): void {
+    this.expensesLoading = true;
+    this.expenseService.getExpenses().subscribe({
+      next: (expenses) => {
+        this.expenses = expenses;
+        this.filterExpenses();
+        this.calculateTotalExpenses();
+        this.updateDoughnutChart();
+        this.expensesLoading = false;
+      },
+      error: (error) => {
+        this.errorMessage = 'Erreur lors du chargement des dépenses';
+        console.error(error);
+        this.expensesLoading = false;
+      }
+    });
+  }
+
+  private calculateTotalExpenses(): void {
+    this.totalExpenses = this.filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+  }
+
+  private processData(sales: any[], stock: any[]): void {
     this.sales = Array.isArray(sales) ? sales : [];
     this.stock = Array.isArray(stock) ? stock : [];
     
     if (this.sales.length > 0 || this.stock.length > 0) {
-      this.dataLoaded = true;
       this.loadPreviousPeriodData();
       this.applyPeriodFilter();
-      
-      if (this.chartsInitialized) {
-        this.initCharts();
-      }
+      this.initCharts();
     } else {
       this.errorMessage = 'Aucune donnée disponible';
     }
-}
+  }
 
-// Dans votre composant
-testServices(): void {
-  console.log('Test des services...');
-  
-  this.saleService.getSalesHistory('all').subscribe({
-    next: sales => console.log('Résultat saleService:', sales),
-    error: err => console.error('Erreur saleService:', err)
-  });
-
-  this.stockService.getStock().subscribe({
-    next: stock => console.log('Résultat stockService:', stock),
-    error: err => console.error('Erreur stockService:', err)
-  });
-}
-
-// Appelez cette méthode depuis votre template temporairement
-// <button (click)="testServices()">Tester les services</button>
+  private filterExpenses(): void {
+    const { start, end } = this.getDateRange();
+    this.filteredExpenses = this.expenses.filter(exp => {
+      const expDate = new Date(exp.date);
+      return isWithinInterval(expDate, { start, end });
+    });
+    this.calculateTotalExpenses();
+  }
 
   private initCharts(): void {
     this.destroyCharts();
@@ -205,17 +275,18 @@ testServices(): void {
         }
       });
 
-      if (this.filteredSales.length === 0) {
+      if (this.expenses.length > 0) {
+        this.filterExpenses();
+      }
+
+      if (this.filteredSales.length === 0 && this.filteredExpenses.length === 0) {
         this.errorMessage = 'Aucune donnée pour cette période';
       } else {
         this.errorMessage = null;
       }
 
       this.calculateMetrics();
-      
-      if (this.chartsInitialized) {
-        this.updateCharts();
-      }
+      this.updateCharts();
     } catch (e) {
       console.error('Erreur application filtre:', e);
       this.errorMessage = 'Erreur de filtrage';
@@ -350,7 +421,9 @@ testServices(): void {
     const ctx = document.getElementById('doughnutChart') as HTMLCanvasElement;
     if (!ctx) return;
 
-    const categories = this.groupSalesByCategory();
+    const categories = this.showExpensesSection && this.filteredExpenses.length > 0 
+      ? this.groupExpensesByCategory()
+      : this.groupSalesByCategory();
     
     if (this.doughnutChart) {
       this.doughnutChart.data.labels = categories.labels;
@@ -362,11 +435,12 @@ testServices(): void {
         data: {
           labels: categories.labels,
           datasets: [{
-            label: 'Répartition',
+            label: this.showExpensesSection ? 'Dépenses' : 'Répartition',
             data: categories.values,
             backgroundColor: [
               '#FF6384', '#36A2EB', '#FFCE56', 
-              '#4BC0C0', '#9966FF', '#FF9F40'
+              '#4BC0C0', '#9966FF', '#FF9F40',
+              '#8AC24A', '#607D8B'
             ]
           }]
         },
@@ -430,6 +504,26 @@ testServices(): void {
     if (Object.keys(categories).length === 0) {
       return {
         labels: ['Aucune donnée'],
+        values: [1]
+      };
+    }
+
+    return {
+      labels: Object.keys(categories),
+      values: Object.values(categories)
+    };
+  }
+
+  private groupExpensesByCategory(): { labels: string[]; values: number[] } {
+    const categories: Record<string, number> = {};
+
+    this.filteredExpenses.forEach(expense => {
+      categories[expense.category] = (categories[expense.category] || 0) + expense.amount;
+    });
+
+    if (Object.keys(categories).length === 0) {
+      return {
+        labels: ['Aucune dépense'],
         values: [1]
       };
     }

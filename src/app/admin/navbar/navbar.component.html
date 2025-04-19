@@ -56,14 +56,14 @@
 
 
 <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-              <img class="img-profile rounded-circle me-2" 
-                   [src]="profilePhoto$ | async" 
-                   alt="Profil" 
-                   width="30" 
-                   height="30">
-              <span class="fw-bold">Administrateur</span>
-            </a>
+  <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+    <img class="img-profile rounded-circle me-2" 
+         [src]="profilePhoto$ | async" 
+         alt="Profil" 
+         width="30" 
+         height="30">
+    <span class="fw-bold">Administrateur</span>
+  </a>
             <ul class="dropdown-menu dropdown-menu-end">
               <li><a class="dropdown-item" routerLink="/admin/settings"><i class="fas fa-cog me-2"></i> Paramètres</a></li>
               <li><a class="dropdown-item" routerLink="/admin/profile"><i class="fas fa-user me-2"></i> Profil</a></li>

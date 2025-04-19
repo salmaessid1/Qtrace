@@ -114,6 +114,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { VentesComponent } from './admin/ventes/ventes.component';
 import { FinancialDashboardComponent } from './responsable/financial-dashboard/financial-dashboard.component';
+import { ReportService } from 'src/app/services/report.service';
 
 
 
@@ -282,6 +283,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     StockService,
    EmailService,
    SupplierService ,
+   ReportService,
 
   ],
   

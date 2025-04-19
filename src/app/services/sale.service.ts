@@ -23,6 +23,30 @@ export class SaleService {
     );
     await Promise.all(updates);
   }
+  // sale.service.ts
+  getSalesReport(): Observable<any> {
+    return this.getAllSales().pipe(
+      map(sales => {
+        const todaySales = sales.filter(s => 
+          new Date(s.date).toDateString() === new Date().toDateString());
+        
+        return {
+          totalSales: sales.length,
+          totalRevenue: sales.reduce((sum, sale) => sum + sale.totalAmount, 0),
+          todaySales: todaySales.length,
+          todayRevenue: todaySales.reduce((sum, sale) => sum + sale.totalAmount, 0),
+          avgSale: sales.length > 0 ? 
+            sales.reduce((sum, sale) => sum + sale.totalAmount, 0) / sales.length : 0,
+          paymentMethods: sales.reduce((acc, sale) => {
+            acc[sale.paymentMethod] = (acc[sale.paymentMethod] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>)
+        };
+      })
+    );
+  }
+  
+
 
 getSalesHistory(period: string): Observable<Sale[]> {
   return this.db.list<Sale>(this.dbPath, ref => {

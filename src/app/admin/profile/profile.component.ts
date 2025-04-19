@@ -628,8 +628,6 @@ private calculateNextRunDate(frequency: string): Date {
     }
   }
 
-
-// Méthode pour confirmer la suppression totale
 confirmClearAllActivities() {
   this.showClearConfirmation = true;
 }

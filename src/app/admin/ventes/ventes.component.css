@@ -1,0 +1,236 @@
+.ventes-container {
+    padding: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #fff;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.ventes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.ventes-header h1 {
+    font-size: 1.8em;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-weight: 700;
+}
+
+.ventes-header h1 i {
+    color: #3498db;
+    font-size: 1.4em;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.ventes-controls {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-box {
+    position: relative;
+    width: 100%;
+    max-width: 350px;
+}
+
+.search-box input {
+    padding: 15px 20px 15px 50px;
+    border: 2px solid #ddd;
+    border-radius: 35px;
+    width: 100%;
+    transition: all 0.3s ease;
+    font-size: 1em;
+    background-color: #fafafa;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.search-box input:focus {
+    border-color: #3498db;
+    background-color: #fff;
+    box-shadow: 0 0 12px rgba(52, 152, 219, 0.3);
+    outline: none;
+}
+
+.search-box i {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+    font-size: 1.2em;
+    transition: color 0.3s ease;
+}
+
+.search-box input:focus + i {
+    color: #3498db;
+}
+
+select {
+    padding: 15px 25px;
+    border: 2px solid #ddd;
+    border-radius: 35px;
+    background-color: #fafafa;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    appearance: none; 
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23aaa'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+    background-size: 12px;
+}
+
+select:focus {
+    border-color: #3498db;
+    background-color: #fff;
+    box-shadow: 0 0 12px rgba(52, 152, 219, 0.3);
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%233498db'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 30px;
+    font-size: 1em;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+}
+
+th, td {
+    padding: 16px 20px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+th {
+    background-color: #f9f9f9;
+    font-weight: 600;
+    color: #444;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    position: relative;
+}
+
+th::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #3498db;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+th:hover::after {
+    transform: scaleX(1);
+}
+
+tr:hover {
+    background-color: #f9f9f9;
+    transition: background-color 0.3s ease;
+}
+
+td {
+    color: #555;
+}
+
+button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #3498db;
+    font-size: 1.4em;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+button:hover {
+    color: #2980b9;
+    transform: scale(1.1);
+}
+
+.loading, .error {
+    padding: 30px;
+    text-align: center;
+    font-size: 1.1em;
+    color: #555;
+    border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+}
+
+.loading {
+    background-color: #f9f9f9;
+    position: relative;
+}
+
+.loading i {
+    animation: spin 1s linear infinite;
+    font-size: 2em;
+    color: #3498db;
+}
+
+.error {
+    background-color: #ffebee;
+    color: #e74c3c;
+    position: relative;
+}
+
+.error::before {
+    content: '\f071'; 
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.5em;
+    color: #e74c3c;
+}
+
+@media (max-width: 768px) {
+    .ventes-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .ventes-controls {
+        width: 100%;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .search-box input {
+        width: 100%;
+    }
+
+    table {
+        font-size: 0.9em;
+    }
+
+    th, td {
+        padding: 12px 15px;
+    }
+}

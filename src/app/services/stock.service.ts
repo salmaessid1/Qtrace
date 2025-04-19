@@ -31,6 +31,8 @@ editingPrice: any;
 })
 export class StockService {
   private stockPath = '/stock';
+  private movementsPath = '/stock-movements';
+
 
   constructor(private db: AngularFireDatabase) {}
 
@@ -65,6 +67,55 @@ export class StockService {
     }): Promise<void> {
       await this.db.list('/stock-movements').push(movement);
     } 
+
+
+    getStockMovements(): Observable<any[]> {
+      return this.db.list(this.movementsPath)
+        .valueChanges()
+        .pipe(
+          map((movements: any[]) => 
+            movements.sort((a, b) => 
+              new Date(b.date).getTime() - new Date(a.date).getTime()
+            )
+          )
+        );
+    }
+
+    getStockReport(): Observable<any> {
+      return this.getStock().pipe(
+        map(stock => {
+          const totalValue = stock.reduce((sum, item) => 
+            sum + (item.quantite * item.prixUnitaireHT), 0);
+          
+          return {
+            totalProducts: stock.length,
+            totalItems: stock.reduce((sum, item) => sum + item.quantite, 0),
+            totalValue,
+            lowStock: stock.filter(item => item.quantite < (item.seuil || 10)).length,
+            lastUpdated: new Date().toISOString()
+          };
+        })
+      );
+    }
+  
+    getStockHistoryReport(): Observable<any> {
+      return this.getStockMovements().pipe(
+        map(movements => {
+          const today = new Date().toISOString().split('T')[0];
+          const recent = movements.filter(m => 
+            m.date && m.date.toString().startsWith(today));
+          
+          return {
+            todayMovements: recent.length,
+            lastMovements: movements.slice(0, 10),
+            movementTypes: {
+              additions: movements.filter(m => m.type === 'ajout').length,
+              removals: movements.filter(m => m.type === 'retrait').length
+            }
+          };
+        })
+      );
+    }
 
     async updateStockQuantity(productId: string, delta: number): Promise<void> {
       try {
